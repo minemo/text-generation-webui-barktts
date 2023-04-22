@@ -100,7 +100,12 @@ def ui():
         with gr.Row():
             forced_speaker = gr.Dropdown(forced_modes, label='Forced speaker', value=params['forced_speaker'])
             modifiers = gr.Dropdown(modifier_options, label='Modifiers', value=params['modifiers'], multiselect=True)
-            
+      
+    activate.change(lambda x: params.update({'activate': x}), activate, None)
+    autoplay.change(lambda x: params.update({'autoplay': x}), autoplay, None)
+    show_text.change(lambda x: params.update({'show_text': x}), show_text, None)
+    forced_speaker_enabled.change(lambda x: params.update({'forced_speaker_enabled': x}), forced_speaker_enabled, None)      
     text_temperature.change(lambda x: params.update({'text_temperature': x}), text_temperature, None)
     audio_temperature.change(lambda x: params.update({'waveform_temperature': x}), audio_temperature, None)
     forced_speaker.change(lambda x: params.update({'forced_speaker': x}), forced_speaker, None)
+    modifiers.change(lambda x: params.update({'modifiers': x}), modifiers, None)
