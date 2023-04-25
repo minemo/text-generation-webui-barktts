@@ -22,6 +22,8 @@ params =  {
     'text_temperature': 0.7,
     'waveform_temperature': 0.7,
     'modifiers': [],
+    'use_small_models': True,
+    'use_cpu': False
 }
 
 input_hijack = {
@@ -82,7 +84,15 @@ def setup():
     # load models into extension directory so we don't clutter the pc
     print("+ Loading model...")
     os.environ['XDG_CACHE_HOME'] = model_path.resolve().as_posix()
-    preload_models(text_ckpt_path=f"{model_path}/text.pt", coarse_ckpt_path=f"{model_path}/coarse.pt", fine_ckpt_path=f"{model_path}/fine.pt")
+    preload_models(
+            text_use_gpu= not params['use_cpu'],
+            text_use_small= params['use_small_models'],
+            coarse_use_gpu= not params['use_cpu'],
+            coarse_use_small=params['use_small_models'],
+            fine_use_gpu= not params['use_cpu'],
+            fine_use_small=params['use_small_models'],
+            codec_use_gpu= not params['use_cpu']
+            )
     print("+ Done!")
     
     print("== Bark TTS extension loaded ==\n\n")
