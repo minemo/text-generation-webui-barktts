@@ -2,15 +2,16 @@
 Bark TTS extension for https://github.com/oobabooga/text-generation-webui/
 All credit for the amazing tts model goes to https://github.com/suno-ai/bark 
 """
-from pathlib import Path
-import time
+import hashlib
+from http.client import IncompleteRead
 import os
+import time
+import urllib.request
+from pathlib import Path
 
 import gradio as gr
-
-from modules import shared
-
 from bark import SAMPLE_RATE, generate_audio, preload_models
+from modules import shared
 from scipy.io.wavfile import write as write_wav
 
 params =  {
@@ -23,7 +24,8 @@ params =  {
     'waveform_temperature': 0.7,
     'modifiers': [],
     'use_small_models': False,
-    'use_cpu': False
+    'use_cpu': False,
+    'force_manual_download': False,
 }
 
 input_hijack = {
@@ -35,6 +37,33 @@ streaming_state = shared.args.no_stream
 forced_modes = ["Man", "Woman", "Narrator"]
 modifier_options = ["[laughter]","[laughs]","[sighs]","[music]","[gasps]","[clears throat]"]
 model_path = Path("extensions/bark_tts/models/")
+
+def manual_model_preload():
+    for model in ["text","coarse","fine","text_2","coarse_2","fine_2"]:
+        remote_url=f"https://dl.suno-models.io/bark/models/v0/{model}.pt"
+        remote_md5=hashlib.md5(remote_url.encode()).hexdigest()
+        out_path = f"{os.path.expanduser('~/.cache/suno/bark_v0')}/{remote_md5}.pt"
+        if not Path(out_path).exists():
+            print(f"\t+ Downloading {model} model to {out_path}...")
+            # we also have to do some user agent tomfoolery to get the download to work
+            req = urllib.request.Request(remote_url, headers={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/112.0'})
+            with urllib.request.urlopen(req) as response, open(out_path, 'wb') as out_file:
+                try:
+                    data = response.read()
+                except IncompleteRead as e:
+                    data = e.partial
+                out_file.write(data)
+        else:
+            print(f"\t+ {model} model already exists, skipping...")
+    preload_models(
+        text_use_gpu= not params['use_cpu'],
+        text_use_small= params['use_small_models'],
+        coarse_use_gpu= not params['use_cpu'],
+        coarse_use_small=params['use_small_models'],
+        fine_use_gpu= not params['use_cpu'],
+        fine_use_small=params['use_small_models'],
+        codec_use_gpu= not params['use_cpu']
+    )
 
 def input_modifier(string):
     if not params['activate']:
@@ -84,15 +113,29 @@ def setup():
     # load models into extension directory so we don't clutter the pc
     print("+ Loading model...")
     os.environ['XDG_CACHE_HOME'] = model_path.resolve().as_posix()
-    preload_models(
-            text_use_gpu= not params['use_cpu'],
-            text_use_small= params['use_small_models'],
-            coarse_use_gpu= not params['use_cpu'],
-            coarse_use_small=params['use_small_models'],
-            fine_use_gpu= not params['use_cpu'],
-            fine_use_small=params['use_small_models'],
-            codec_use_gpu= not params['use_cpu']
-            )
+    if not params['force_manual_download']:
+        try:
+            preload_models(
+                    text_use_gpu= not params['use_cpu'],
+                    text_use_small= params['use_small_models'],
+                    coarse_use_gpu= not params['use_cpu'],
+                    coarse_use_small=params['use_small_models'],
+                    fine_use_gpu= not params['use_cpu'],
+                    fine_use_small=params['use_small_models'],
+                    codec_use_gpu= not params['use_cpu']
+                    )
+        except ValueError as e:
+            # for some reason the download fails sometimes, so we just do it manually
+            # solution adapted from https://github.com/suno-ai/bark/issues/46
+            print("\t+ Automatic download failed, trying manual download...")
+            manual_model_preload()
+            
+    else:
+        print("\t+ Forcing manual download...")
+        manual_model_preload()
+            
+            
+            
     print("+ Done!")
     
     print("== Bark TTS extension loaded ==\n\n")
