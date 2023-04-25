@@ -22,7 +22,7 @@ params =  {
     'text_temperature': 0.7,
     'waveform_temperature': 0.7,
     'modifiers': [],
-    'use_small_models': True,
+    'use_small_models': False,
     'use_cpu': False
 }
 
