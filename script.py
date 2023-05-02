@@ -86,12 +86,13 @@ def output_modifier(string):
         ttstext = f"{params['forced_speaker'].upper()}: {ttstext}"
             
     audio = generate_audio(ttstext, text_temp=params['text_temperature'], waveform_temp=params['waveform_temperature'])
-    write_wav(f"extensions/bark_tts/generated/{shared.character}_{int(time.time())}.wav", SAMPLE_RATE, audio)
+    time_label = int(time.time())
+    write_wav(f"extensions/bark_tts/generated/{shared.character}_{time_label}.wav", SAMPLE_RATE, audio)
     autoplay = 'autoplay' if params['autoplay'] else ''
     if params['show_text']:
-        string = f'<audio src="file/extensions/bark_tts/generated/{shared.character}_{int(time.time())}.wav" controls {autoplay}></audio><br>{ttstext}'
+        string = f'<audio src="file/extensions/bark_tts/generated/{shared.character}_{time_label}.wav" controls {autoplay}></audio><br>{ttstext}'
     else:
-        string = f'<audio src="file/extensions/bark_tts/generated/{shared.character}_{int(time.time())}.wav" controls {autoplay}></audio>'
+        string = f'<audio src="file/extensions/bark_tts/generated/{shared.character}_{time_label}.wav" controls {autoplay}></audio>'
     
     shared.args.no_stream = streaming_state
     return string
