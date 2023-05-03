@@ -9,6 +9,10 @@ import time
 import urllib.request
 from pathlib import Path
 
+# Should change this environment variable before import bark
+model_path = Path("extensions/bark_tts/models/")
+os.environ['XDG_CACHE_HOME'] = model_path.resolve().as_posix()
+
 import nltk
 import gradio as gr
 import numpy as np
@@ -43,7 +47,6 @@ input_hijack = {
 streaming_state = shared.args.no_stream
 forced_modes = ["Man", "Woman", "Narrator"]
 modifier_options = ["[laughter]","[laughs]","[sighs]","[music]","[gasps]","[clears throat]"]
-model_path = Path("extensions/bark_tts/models/")
 voice_presets = sorted(list(ALLOWED_PROMPTS))
 
 def manual_model_preload():
@@ -120,6 +123,10 @@ def output_modifier(string):
 
 
 def setup():
+    # Update params
+    params['use_small_models'] = os.environ.get("SUNO_USE_SMALL_MODELS", False)
+    params['use_cpu'] = os.environ.get("SUNO_OFFLOAD_CPU", False)
+
     # tell the user what's going on
     print()
     print("== Loading Bark TTS extension ==")
@@ -134,7 +141,6 @@ def setup():
     
     # load models into extension directory so we don't clutter the pc
     print("+ Loading model...")
-    os.environ['XDG_CACHE_HOME'] = model_path.resolve().as_posix()
     if not params['force_manual_download']:
         try:
             preload_models(
