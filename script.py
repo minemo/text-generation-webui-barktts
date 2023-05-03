@@ -8,9 +8,13 @@ import os
 import time
 import urllib.request
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Read .env file
+load_dotenv()
 
 # Should change this environment variable before import bark
-model_path = Path("extensions/bark_tts/models/")
+model_path = Path(os.environ.get('MODEL_PATH', 'extensions/bark_tts/models/'))
 os.environ['XDG_CACHE_HOME'] = model_path.resolve().as_posix()
 
 import nltk
@@ -31,8 +35,8 @@ params =  {
     'forced_speaker': 'Man',
     'show_text': False,
     'modifiers': [],
-    'use_small_models': False,
-    'use_cpu': False,
+    'use_small_models': os.environ.get("USE_SMALL_MODELS", 'false').lower() == 'true',
+    'use_cpu': os.environ.get("USE_CPU", 'false').lower() == 'true',
     'force_manual_download': False,
     'voice': 'v2/en_speaker_3',
     'sample_rate': SAMPLE_RATE,
@@ -123,10 +127,6 @@ def output_modifier(string):
 
 
 def setup():
-    # Update params
-    params['use_small_models'] = os.environ.get("SUNO_USE_SMALL_MODELS", False)
-    params['use_cpu'] = os.environ.get("SUNO_OFFLOAD_CPU", False)
-
     # tell the user what's going on
     print()
     print("== Loading Bark TTS extension ==")
@@ -136,7 +136,7 @@ def setup():
     if not Path("extensions/bark_tts/generated").exists():
         Path("extensions/bark_tts/generated").mkdir(parents=True)
     if not Path(model_path).exists():
-        Path("extensions/bark_tts/models").mkdir(parents=True)
+        Path(model_path).mkdir(parents=True)
     print("+ Done!")
     
     # load models into extension directory so we don't clutter the pc
