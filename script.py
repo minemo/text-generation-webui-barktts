@@ -75,6 +75,7 @@ def manual_model_preload():
 
 def input_modifier(string):
     if not params['activate']:
+        shared.processing_message = "*Is typing...*"
         return string
     shared.processing_message = "*Is recording a voice message...*"
     shared.args.no_stream = True
