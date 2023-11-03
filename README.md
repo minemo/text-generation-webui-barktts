@@ -1,6 +1,11 @@
 # text-generation-webui-barktts
 A simple extension for the [text-generation-webui by oobabooga](https://github.com/oobabooga/text-generation-webui) that uses [Bark](https://github.com/suno-ai/bark) for audio output.
 
+# ⚠️Important Info⚠️
+This repo is not actively maintained _(at least for a while)_.
+If you want a version that works and fixes some issues with my code, 
+have a look at [RandoInternetPreson's Fork](https://github.com/RandomInternetPreson/text-generation-webui-barktts)
+
 ## How to install
 Assuming you already have the webui set up:
 
